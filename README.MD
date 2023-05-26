@@ -7,7 +7,6 @@ HangoutYuk! (or HaYuk!) is the solution to easily planning hangout events with y
 To run this code locally
 
 ```python:
-
 uvicorn app:app --reload
 ```
 
