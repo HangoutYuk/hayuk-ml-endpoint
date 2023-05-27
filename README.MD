@@ -19,3 +19,5 @@ Press CTRL+C to stop the server
 | M360DSX3692 | Adri Firmansya Sofyan     | Universitas Telkom               | [Linkedin](https://www.linkedin.com/in/adri-firmansya-sofyan-9215b2271/)    |
 | M309DSX0159 | Muhammad Rafi Valliansyah | Universitas Pendidikan Indonesia | [Linkedin](https://www.linkedin.com/in/muhammad-rafi-valliansyah-47677882/) |
 | M169DSY2157 | Sania Rizka Ramadhani     | Universitas Gadjah Mada          | [Linkedin](https://www.linkedin.com/in/saniarizka/)                         |
+
+> So einfach ist es schon, wie kannst du es nicht schaffen?

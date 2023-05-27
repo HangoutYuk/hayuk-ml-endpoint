@@ -41,11 +41,11 @@ def recommender_place(user_location: tuple):
 
     # mempersempit tabel
     df_simplified = df[
-        ['Name', 'Review URL', 'Latitude', 'Longitude', 'Place Id']]
+        ['place_id', 'name', 'latitude', 'longitude', 'text_review']]
 
     # membuat kolom coor yang berisi nilai latitude dan longitude
     df_simplified = df_simplified.assign(coor=list(
-        zip(df_simplified.Latitude, df_simplified.Longitude)))
+        zip(df_simplified.latitude, df_simplified.longitude)))
 
     # melakukan pengulangan untuk mendapatkan nilai jarak
     distances_km = []
@@ -60,7 +60,7 @@ def recommender_place(user_location: tuple):
 
     # melakukan prediksi sentimen
     sentiment = []
-    for sentence in df_simplified['Review URL']:
+    for sentence in df_simplified['text_review']:
         if len(str(sentence)) <= 1:
             sentiment.append(0.0)
         else:
@@ -75,7 +75,7 @@ def recommender_place(user_location: tuple):
         ['distance_from_user', 'quality'], ascending=[True, True]).head(MAX_ITEM)
 
     # mengembalikan nilai respons
-    ids = to_list_of_dict(df_oversimplified.loc[:, "Place Id"])
-    names = to_list_of_dict(df_oversimplified.loc[:, "Name"])
+    ids = to_list_of_dict(df_oversimplified.loc[:, "place_id"])
+    names = to_list_of_dict(df_oversimplified.loc[:, "name"])
 
     return {"places_id": ids, "places_name": names}
