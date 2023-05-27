@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from modules.recommender import *
 from metadata import *
-
+import uvicorn
 
 app = FastAPI(
     title=title_api,
@@ -32,3 +32,5 @@ def test_lokasi(loc: str):
 def get_pwd():
     return {"now on": os.getcwd(),
             "don ask": os.path.dirname(os.path.realpath(__file__))}
+
+uvicorn.run(app, host='0.0.0.0',port=8000)
