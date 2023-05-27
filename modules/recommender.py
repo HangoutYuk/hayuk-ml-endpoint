@@ -27,6 +27,13 @@ def distance_from(loc1, loc2):
     return distance
 
 
+def to_list_of_dict(data):
+    list_of_dict = []
+    for index, value in enumerate(data):
+        list_of_dict.append({index: value})
+    return list_of_dict
+
+
 def recommender_place(user_location: tuple):
 
     # mengambil data
@@ -37,8 +44,8 @@ def recommender_place(user_location: tuple):
         ['Name', 'Review URL', 'Latitude', 'Longitude', 'Place Id']]
 
     # membuat kolom coor yang berisi nilai latitude dan longitude
-    df_simplified['coor'] = list(
-        zip(df_simplified.Latitude, df_simplified.Longitude))
+    df_simplified = df_simplified.assign(coor=list(
+        zip(df_simplified.Latitude, df_simplified.Longitude)))
 
     # melakukan pengulangan untuk mendapatkan nilai jarak
     distances_km = []
@@ -46,7 +53,7 @@ def recommender_place(user_location: tuple):
         distances_km.append(distance_from(user_location, row[5]))
 
     # memasukkan nilai jarak ke kolom distance_from_user
-    df_simplified['distance_from_user'] = distances_km
+    df_simplified = df_simplified.assign(distance_from_user=distances_km)
 
     # menginisiasi model
     model = tf.saved_model.load(MODEL_PATH)
@@ -61,14 +68,14 @@ def recommender_place(user_location: tuple):
             sentiment.append(prediction)
 
     # memasukkan hasil prediksi ke dalam kolom quality
-    df_simplified['quality'] = sentiment
+    df_simplified = df_simplified.assign(quality=sentiment)
 
     # mengurutkan data berdasarkan jarak terpendek dan prediksi sentimen
     df_oversimplified = df_simplified.sort_values(
         ['distance_from_user', 'quality'], ascending=[True, True]).head(MAX_ITEM)
 
     # mengembalikan nilai respons
-    ids = df_oversimplified['Place Id']
-    names = df_oversimplified['Name']
+    ids = to_list_of_dict(df_oversimplified.loc[:, "Place Id"])
+    names = to_list_of_dict(df_oversimplified.loc[:, "Name"])
 
-    return {"places id": ids, "places name": names}
+    return {"places_id": ids, "places_name": names}
