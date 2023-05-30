@@ -1,3 +1,5 @@
 __pycache__
 modules/__pycache__
+modules/test_*
+modules/data
 notes.txt
