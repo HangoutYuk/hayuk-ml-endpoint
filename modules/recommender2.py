@@ -4,10 +4,7 @@ import haversine as hs
 import os
 import requests
 import mysql.connector
-from google.oauth2 import service_account
 
-credentials = service_account.Credentials.from_service_account_file(
-    './vertex.json')
 # Define - Global Variables
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 DATABASE_PATH_LOCATION = os.path.join(
