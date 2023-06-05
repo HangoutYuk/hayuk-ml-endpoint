@@ -4,13 +4,15 @@ import haversine as hs
 import tensorflow as tf
 import os
 import mysql.connector
+import time
 
 # Define - Global Variables
 CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
 DATABASE_PATH_LOCATION = os.path.join(
-    CURRENT_PATH, "data", "location.csv")
+    CURRENT_PATH, "data", "loc.csv")
 MODEL_PATH = os.path.join(CURRENT_PATH, "models")
-MAX_ITEM = 10
+MAX_ITEM = 5
+ADD_ITEM = 5
 
 
 def pengubah_lat_long(lokasi):
@@ -20,8 +22,7 @@ def pengubah_lat_long(lokasi):
         long = float(lokasi[index+1:].strip())
         return (lat, long)
     except Exception as e:
-        raise HTTPException(status_code=400, detail="Bad Request",
-                            descriptions="Input parameters should be (latitude,longitude) without brackets", messages=e)
+        raise HTTPException(status_code=400, detail=f"Bad Request : {e}")
 
 
 def distance_from(loc1, loc2):
@@ -32,6 +33,10 @@ def distance_from(loc1, loc2):
 def connect_database():
     try:
         mydb = mysql.connector.connect(
+            # host="34.121.171.7",
+            # user="root",
+            # password="9gYnTWLACG3dkhA",
+            # database="hayuk_ml"
             host="localhost",
             user="root",
             password="",
@@ -40,29 +45,35 @@ def connect_database():
         return mydb
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail="Server Connect Fail", messages=e)
+            status_code=500, detail=f"Server Connect Fail : {e}")
 
 
 def get_data_mysql(conn):
-    place_id = []
-    name = []
-    latitude = []
-    longitude = []
-    text_review = []
+    try:
+        place_id = []
+        name = []
+        latitude = []
+        longitude = []
+        text_review = []
+        quality = []
 
-    conn = conn.cursor()
-    conn.execute("SELECT * FROM location")
+        conn = conn.cursor()
+        conn.execute("SELECT * FROM location")
 
-    myresult = conn.fetchall()
+        myresult = conn.fetchall()
 
-    for x in myresult:
-        place_id.append(x[0])
-        name.append(x[1])
-        latitude.append(x[2])
-        longitude.append(x[3])
-        text_review.append(x[4])
+        for x in myresult:
+            place_id.append(x[0])
+            name.append(x[1])
+            latitude.append(x[2])
+            longitude.append(x[3])
+            text_review.append(x[4])
+            quality.append(x[5])
 
-    return place_id, name, latitude, longitude, text_review
+        return place_id, name, latitude, longitude, text_review, quality
+    except Exception as e:
+        raise HTTPException(
+            status_code=501, detail=f"Table Not Found : {e}")
 
 
 def to_list_of_dict(data):
@@ -72,30 +83,40 @@ def to_list_of_dict(data):
     return list_of_dict
 
 
+def to_update_prediction_results():
+    # Here lies the codes
+    return {'message': "Prediction Data Updated Successfully"}
+
+
 def recommender_place(user_location: tuple):
+
+    # test time
+    st = time.time()
 
     # grab mysql connection database
     connection = connect_database()
 
     # fetch all necessary items
-    place_id, name, latitude, longitude, text_review = get_data_mysql(
+    place_id, name, latitude, longitude, text_review, quality = get_data_mysql(
         connection)
 
-    # convert data to pandas dataframe
+    # wrap items into dictionary
     df_temp = {
         'place_id': place_id,
         'name': name,
         'latitude': latitude,
         'longitude': longitude,
-        'text_review': text_review
+        'quality': quality
     }
 
-    # mempersempit tabel
+    # convert dictionary to pandas dataframe
     df = pd.DataFrame(df_temp)
 
+    # df = pd.read_csv(DATABASE_PATH_LOCATION)
+    # df = df[['place_id', 'name', 'latitude', 'longitude', 'quality']]
+
     # membuat kolom coor yang berisi nilai latitude dan longitude
-    df = df.assign(coor=list(
-        zip(df.latitude, df.longitude)))
+    df = df.assign(coor=list(zip(df.latitude, df.longitude)))
 
     # melakukan pengulangan untuk mendapatkan nilai jarak
     distances_km = []
@@ -106,24 +127,24 @@ def recommender_place(user_location: tuple):
     df = df.assign(distance_from_user=distances_km)
 
     df_distance_selected = df.sort_values(
-        ['distance_from_user'], ascending=[True]).head(MAX_ITEM+10)
+        ['distance_from_user'], ascending=[True]).head(MAX_ITEM+ADD_ITEM)
 
     # menginisiasi model
-    model = tf.saved_model.load(MODEL_PATH)
+    # model = tf.saved_model.load(MODEL_PATH)
 
-    # melakukan prediksi sentimen
-    sentiment = []
-    for sentence in df_distance_selected['text_review']:
-        if len(str(sentence)) <= 1:
-            sentiment.append(0.0)
-        else:
-            prediction = model([[sentence]]).numpy()[0][0]
-            sentiment.append(prediction)
+    # # melakukan prediksi sentimen
+    # sentiment = []
+    # for sentence in df_distance_selected['text_review']:
+    #     if len(str(sentence)) <= 1:
+    #         sentiment.append(0.0)
+    #     else:
+    #         prediction = model([[sentence]]).numpy()[0][0]
+    #         sentiment.append(prediction)
 
-    # memasukkan hasil prediksi ke dalam kolom quality
-    df_distance_selected = df_distance_selected.assign(quality=sentiment)
+    # # memasukkan hasil prediksi ke dalam kolom quality
+    # df_distance_selected = df_distance_selected.assign(quality=sentiment)
 
-    # mengurutkan data berdasarkan jarak terpendek dan prediksi sentimen
+    # mengurutkan data berdasarkan prediksi sentimen
     df_quality_selected = df_distance_selected.sort_values(
         ['quality'], ascending=[True]).head(MAX_ITEM)
 
@@ -131,4 +152,12 @@ def recommender_place(user_location: tuple):
     ids = to_list_of_dict(df_quality_selected.loc[:, "place_id"])
     names = to_list_of_dict(df_quality_selected.loc[:, "name"])
 
-    return {"places_id": ids, "places_name": names}
+    # end test time
+    et = time.time()
+    elapsed_time = et - st
+
+    return {"places_id": ids, "places_name": names, "timez": elapsed_time}
+
+# notes for commit :
+# changes in algoritm, now predicting outside recommender place
+# add variables to adjust outputs
