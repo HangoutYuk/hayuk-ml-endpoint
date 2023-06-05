@@ -1,18 +1,12 @@
 from fastapi import HTTPException
 import pandas as pd
 import haversine as hs
-import tensorflow as tf
-import os
+import requests
 import mysql.connector
 import time
 
 # Define - Global Variables
-CURRENT_PATH = os.path.dirname(os.path.realpath(__file__))
-DATABASE_PATH_LOCATION = os.path.join(
-    CURRENT_PATH, "data", "loc.csv")
-MODEL_PATH = os.path.join(CURRENT_PATH, "models")
-MAX_ITEM = 5
-ADD_ITEM = 5
+MAX_ITEM = 10
 
 
 def pengubah_lat_long(lokasi):
@@ -22,7 +16,8 @@ def pengubah_lat_long(lokasi):
         long = float(lokasi[index+1:].strip())
         return (lat, long)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Bad Request : {e}")
+        raise HTTPException(
+            status_code=400, detail=f"Bad Request : {e}")
 
 
 def distance_from(loc1, loc2):
@@ -33,13 +28,9 @@ def distance_from(loc1, loc2):
 def connect_database():
     try:
         mydb = mysql.connector.connect(
-            # host="34.121.171.7",
-            # user="root",
-            # password="9gYnTWLACG3dkhA",
-            # database="hayuk_ml"
-            host="localhost",
+            host="34.101.154.108",
             user="root",
-            password="",
+            password="9gYnTWLACG3dkhA",
             database="hayuk_ml"
         )
         return mydb
@@ -49,31 +40,25 @@ def connect_database():
 
 
 def get_data_mysql(conn):
-    try:
-        place_id = []
-        name = []
-        latitude = []
-        longitude = []
-        text_review = []
-        quality = []
+    place_id = []
+    name = []
+    latitude = []
+    longitude = []
+    text_review = []
 
-        conn = conn.cursor()
-        conn.execute("SELECT * FROM location")
+    conn = conn.cursor()
+    conn.execute("SELECT * FROM location")
 
-        myresult = conn.fetchall()
+    myresult = conn.fetchall()
 
-        for x in myresult:
-            place_id.append(x[0])
-            name.append(x[1])
-            latitude.append(x[2])
-            longitude.append(x[3])
-            text_review.append(x[4])
-            quality.append(x[5])
+    for x in myresult:
+        place_id.append(x[0])
+        name.append(x[1])
+        latitude.append(x[2])
+        longitude.append(x[3])
+        text_review.append(x[4])
 
-        return place_id, name, latitude, longitude, text_review, quality
-    except Exception as e:
-        raise HTTPException(
-            status_code=501, detail=f"Table Not Found : {e}")
+    return place_id, name, latitude, longitude, text_review
 
 
 def to_list_of_dict(data):
@@ -83,37 +68,28 @@ def to_list_of_dict(data):
     return list_of_dict
 
 
-def to_update_prediction_results():
-    # Here lies the codes
-    return {'message': "Prediction Data Updated Successfully"}
-
-
 def recommender_place(user_location: tuple):
-
-    # test time
+    # start time
     st = time.time()
 
     # grab mysql connection database
     connection = connect_database()
 
     # fetch all necessary items
-    place_id, name, latitude, longitude, text_review, quality = get_data_mysql(
+    place_id, name, latitude, longitude, text_review = get_data_mysql(
         connection)
 
-    # wrap items into dictionary
+    # convert data to pandas dataframe
     df_temp = {
         'place_id': place_id,
         'name': name,
         'latitude': latitude,
         'longitude': longitude,
-        'quality': quality
+        'text_review': text_review
     }
 
-    # convert dictionary to pandas dataframe
+    # mempersempit tabel
     df = pd.DataFrame(df_temp)
-
-    # df = pd.read_csv(DATABASE_PATH_LOCATION)
-    # df = df[['place_id', 'name', 'latitude', 'longitude', 'quality']]
 
     # membuat kolom coor yang berisi nilai latitude dan longitude
     df = df.assign(coor=list(zip(df.latitude, df.longitude)))
@@ -127,37 +103,41 @@ def recommender_place(user_location: tuple):
     df = df.assign(distance_from_user=distances_km)
 
     df_distance_selected = df.sort_values(
-        ['distance_from_user'], ascending=[True]).head(MAX_ITEM+ADD_ITEM)
+        ['distance_from_user'], ascending=[True]).head(MAX_ITEM*2)
 
-    # menginisiasi model
-    # model = tf.saved_model.load(MODEL_PATH)
+    # melakukan prediksi sentimen
+    sentiment = []
+    for sentence in df_distance_selected['text_review']:
+        if len(str(sentence)) <= 1:
+            sentiment.append(0.0)
+        else:
+            prediction = request_endpoints(sentence)
+            sentiment.append(prediction)
 
-    # # melakukan prediksi sentimen
-    # sentiment = []
-    # for sentence in df_distance_selected['text_review']:
-    #     if len(str(sentence)) <= 1:
-    #         sentiment.append(0.0)
-    #     else:
-    #         prediction = model([[sentence]]).numpy()[0][0]
-    #         sentiment.append(prediction)
+    # memasukkan hasil prediksi ke dalam kolom quality
+    df_distance_selected = df_distance_selected.assign(quality=sentiment)
 
-    # # memasukkan hasil prediksi ke dalam kolom quality
-    # df_distance_selected = df_distance_selected.assign(quality=sentiment)
-
-    # mengurutkan data berdasarkan prediksi sentimen
+    # mengurutkan data berdasarkan jarak terpendek dan prediksi sentimen
     df_quality_selected = df_distance_selected.sort_values(
         ['quality'], ascending=[True]).head(MAX_ITEM)
 
-    # mengembalikan nilai respons
+    # end time
+    et = time.time()
+
+    # calculate elapsed time
+    elapsed_time = et - st
+
+    # wrap results into variable
     ids = to_list_of_dict(df_quality_selected.loc[:, "place_id"])
     names = to_list_of_dict(df_quality_selected.loc[:, "name"])
 
-    # end test time
-    et = time.time()
-    elapsed_time = et - st
+    return {"places_id": ids, "places_name": names, "elapsed_time": elapsed_time}
 
-    return {"places_id": ids, "places_name": names, "timez": elapsed_time}
 
-# notes for commit :
-# changes in algoritm, now predicting outside recommender place
-# add variables to adjust outputs
+def request_endpoints(sentence: str):
+    ENDPOINT_ID = "7950806074959855616"
+    PROJECT_ID = "curious-furnace-381420"
+    access_token = "ya29.a0AWY7CkmZIUi034IGsGUyg7p_-SEdf8SVnfTZFE6CD9l-qAFadGGv8RoQsER8DTSNwxZQtRSXJLGiXUZuNM4RNRnji79cKFbO86zKlx78KY2mIvXlI9kVVfyuZgl2iKw-4GqyGF3gFxfgENPplpmdp4wo2Ra1A14R6KOnUAKvKn6mnOJTkvVAJhWx4ewuAd4RPut-J_lvKESj5QnB2H6jXoQocOqR0N3vviGVVocaCgYKAdwSARMSFQG1tDrpUn3da4Xozbyw6iHcdlrxHw0238"
+    req = requests.post(f"https://asia-southeast1-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/asia-southeast1/endpoints/{ENDPOINT_ID}:predict", headers={
+                        'Content-Type': 'application/json', 'Authorization': f'Bearer {access_token}'}, json={"instances": [[sentence]]})
+    return req.text
