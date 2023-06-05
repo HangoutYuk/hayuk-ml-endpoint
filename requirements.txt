@@ -1,6 +1,6 @@
 fastapi
 pandas
-tensorflow
 haversine
 uvicorn[standard]
 mysql-connector-python
+requests
