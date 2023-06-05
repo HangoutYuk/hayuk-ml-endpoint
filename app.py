@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from modules.recommender import *
+from modules.recommender2 import *
 from metadata import *
 import uvicorn
 

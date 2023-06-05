@@ -3,3 +3,5 @@ modules/__pycache__
 modules/test_*
 modules/data
 notes.txt
+venv
+.vscode

@@ -4,3 +4,6 @@ tensorflow
 haversine
 uvicorn[standard]
 mysql-connector-python
+google-cloud-aiplatform
+requests
+numpy
