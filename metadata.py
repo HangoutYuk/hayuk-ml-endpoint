@@ -18,6 +18,6 @@ version_api = "1.0.0"
 tags_metadata_api = [
     {
         "name": "Get Recommended Locations",
-        "description": "This is where you can get recommended locations"
+        "description": "Get recommended locations"
     }
 ]
