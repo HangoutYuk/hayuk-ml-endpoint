@@ -1,11 +1,14 @@
 from fastapi import HTTPException
 from modules.recommender import *
+from dotenv import load_dotenv
+import os
 import pandas as pd
 import haversine as hs
 import requests
 import mysql.connector
 import time
 
+load_dotenv()
 
 # Define - Global Variables
 MAX_ITEM = 10
@@ -128,9 +131,9 @@ def recommender_place_speed(user_location: tuple):
 
 
 def request_endpoints(sentence: str):
-    ENDPOINT_ID = "7950806074959855616"
-    PROJECT_ID = "curious-furnace-381420"
-    access_token = "ya29.a0AWY7CkmZIUi034IGsGUyg7p_-SEdf8SVnfTZFE6CD9l-qAFadGGv8RoQsER8DTSNwxZQtRSXJLGiXUZuNM4RNRnji79cKFbO86zKlx78KY2mIvXlI9kVVfyuZgl2iKw-4GqyGF3gFxfgENPplpmdp4wo2Ra1A14R6KOnUAKvKn6mnOJTkvVAJhWx4ewuAd4RPut-J_lvKESj5QnB2H6jXoQocOqR0N3vviGVVocaCgYKAdwSARMSFQG1tDrpUn3da4Xozbyw6iHcdlrxHw0238"
+    ENDPOINT_ID = os.environ.get("ENDPOINT_ID")
+    PROJECT_ID = os.environ.get("PROJECT_ID")
+    access_token = os.environ.get("ACCESS_TOKEN")
     req = requests.post(f"https://asia-southeast1-aiplatform.googleapis.com/v1/projects/{PROJECT_ID}/locations/asia-southeast1/endpoints/{ENDPOINT_ID}:predict", headers={
                         'Content-Type': 'application/json', 'Authorization': f'Bearer {access_token}'}, json={"instances": [[sentence]]})
     return req.text
