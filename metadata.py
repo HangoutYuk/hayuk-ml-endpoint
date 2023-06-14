@@ -2,7 +2,7 @@
 title_api = "HangoutYuk Machine Learning API"
 
 description_api = """
-Hayuk Machine Learninf Endpoint API
+Hayuk Machine Learning Endpoint API
 
 ## Locations
 
