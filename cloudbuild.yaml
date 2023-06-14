@@ -35,7 +35,7 @@ steps:
       - '--max-instances'
       - '1'
       - '--set-env-vars'
-      - '[PROJECT_ID=$PROJECT_ID, ACCESS_TOKEN=$$ACCESS_TOKEN, ENDPOINT_ID=$$ENDPOINT_ID, DB_HOST=$$DB_HOST, DB_PASS=$$DB_PASS]'
+      - '[PROJECT_ID=$PROJECT_ID, ACCESS_TOKEN=$ACCESS_TOKEN, ENDPOINT_ID=$ENDPOINT_ID, DB_HOST=$DB_HOST, DB_PASS=$DB_PASS]'
     secretEnv: ['ACCESS_TOKEN', 'ENDPOINT_ID', 'DB_HOST', 'DB_PASS']
 options:
   logging: CLOUD_LOGGING_ONLY
