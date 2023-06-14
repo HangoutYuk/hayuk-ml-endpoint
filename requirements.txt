@@ -4,4 +4,4 @@ haversine
 uvicorn[standard]
 mysql-connector-python
 requests
-cleantext
+clean-text
