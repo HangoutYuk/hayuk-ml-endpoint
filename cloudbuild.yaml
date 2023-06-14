@@ -43,7 +43,7 @@ images:
   - 'asia-southeast2-docker.pkg.dev/$PROJECT_ID/recommender-api/recommender-api:$COMMIT_SHA'
 availableSecrets:
   secretManager:
-    - versionName: projects/$PROJECT_NUMBER/secrets/hayuk-recommender-api-secrets
+    - versionName: projects/$PROJECT_ID/secrets/hayuk-recommender-api-secrets
       env: 'ACCESS_TOKEN'
-    - versionName: projects/$PROJECT_NUMBER/secrets/hayuk-recommender-api-endpoint-id
+    - versionName: projects/$PROJECT_ID/secrets/hayuk-recommender-api-endpoint-id
       env: 'ENDPOINT_ID'
