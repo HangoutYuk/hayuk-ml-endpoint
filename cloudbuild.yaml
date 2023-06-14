@@ -36,7 +36,7 @@ steps:
       - '1'
       - '--set-env-vars'
       - '[PROJECT_ID=$PROJECT_ID, ACCESS_TOKEN=$$TOKEN, ENDPOINT_ID=$$ENDPOINT, DB_HOST=$$HOST, DB_PASS=$$PASS]'
-    secretEnv: ['ACCESS_TOKEN', 'ENDPOINT_ID', 'DB_HOST', 'DB_PASS']
+    secretEnv: ['TOKEN', 'ENDPOINT', 'HOST', 'PASS']
 options:
   logging: CLOUD_LOGGING_ONLY
 images:
