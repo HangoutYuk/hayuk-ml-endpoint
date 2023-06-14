@@ -1,5 +1,5 @@
 
-title_api = "Hayuk ML API"
+title_api = "HangoutYuk Machine Learning API"
 
 description_api = """
 Hayuk ML API helps you do awesome stuff. 🚀
