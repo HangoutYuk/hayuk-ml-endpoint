@@ -14,7 +14,7 @@ MAX_ITEM = 10
 def connect_database():
     try:
         mydb = mysql.connector.connect(
-            host="34.101.154.108",
+            host="34.101.95.234",
             user="root",
             password="9gYnTWLACG3dkhA",
             database="hayuk_ml"
