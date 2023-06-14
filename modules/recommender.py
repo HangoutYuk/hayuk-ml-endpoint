@@ -1,12 +1,27 @@
 from fastapi import HTTPException
+from cleantext import clean
 import pandas as pd
 import haversine as hs
 import requests
 import mysql.connector
 import time
+import re
 
 # Define - Global Variables
 MAX_ITEM = 10
+
+
+def preprocess(sentence):
+    sentence1 = clean(sentence, no_emoji=True)
+    sentence2 = sentence1.lower().strip()
+    words = sentence2.split()
+    temp = []
+    for i in words:
+        normal_string = re.sub("[^A-Z]", "", i, 0, re.IGNORECASE)
+        temp.append(normal_string)
+    sentence3 = " ".join(temp)
+
+    return sentence3
 
 
 def pengubah_lat_long(lokasi):
@@ -108,11 +123,9 @@ def recommender_place(user_location: tuple):
     # melakukan prediksi sentimen
     sentiment = []
     for sentence in df_distance_selected['text_review']:
-        if len(str(sentence)) <= 1:
-            sentiment.append(0.0)
-        else:
-            prediction = request_endpoints(sentence)
-            sentiment.append(prediction)
+        sentence1 = preprocess(sentence)
+        prediction = request_endpoints(sentence1)
+        sentiment.append(prediction)
 
     # memasukkan hasil prediksi ke dalam kolom quality
     df_distance_selected = df_distance_selected.assign(quality=sentiment)
