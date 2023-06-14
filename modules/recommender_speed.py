@@ -41,7 +41,7 @@ def refresh_sentiment_data():
         prediction = request_endpoints(i2)  # You Were To Predict Here
         prediction_results.append(prediction)
 
-    for i, j in zip(place_id, prediction):
+    for i, j in zip(place_id, prediction_results):
         val.append(tuple([j, i]))
 
     cursor.executemany(sql, val)
