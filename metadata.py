@@ -2,7 +2,7 @@
 title_api = "HangoutYuk Machine Learning API"
 
 description_api = """
-Hayuk ML API helps you do awesome stuff. 🚀
+Hayuk Machine Learninf Endpoint API
 
 ## Locations
 
@@ -13,7 +13,7 @@ With respect of these criteria:
 
 """
 
-version_api = "0.0.1"
+version_api = "1.0.0"
 
 tags_metadata_api = [
     {
