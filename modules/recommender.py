@@ -47,9 +47,9 @@ def distance_from(loc1, loc2):
 def connect_database():
     try:
         mydb = mysql.connector.connect(
-            host=os.environ.get("DB_HOST"),
+            host=os.getenv("DB_HOST"),
             user="root",
-            password=os.environ.get("DB_PASS"),
+            password=os.getenv("DB_PASS"),
             database="hayuk_ml"
         )
         return mydb
