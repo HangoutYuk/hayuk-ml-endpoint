@@ -15,7 +15,7 @@ steps:
       ]
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
-    args: ['gcloud run deploy hayuk-recommender-api --image asia-southeast2-docker.pkg.dev/$PROJECT_ID/recommender-api/recommender-api:$COMMIT_SHA --allow-unauthenticated --service-account hayuk-recommender-api@hayuk-project.iam.gserviceaccount.com --region asia-southeast2 --cpu=1 --memory=1G --min-instances 0 --max-instances 1 --set-env-vars=[PROJECT_ID=$PROJECT_ID, ACCESS_TOKEN=$$TOKEN, ENDPOINT_ID=$$ENDPOINT, DB_HOST=$$HOST, DB_PASS=$$PASS] ']
+    args: ['run' 'deploy' 'hayuk-recommender-api' '--image' 'asia-southeast2-docker.pkg.dev/$PROJECT_ID/recommender-api/recommender-api:$COMMIT_SHA' '--allow-unauthenticated' '--service-account' 'hayuk-recommender-api@hayuk-project.iam.gserviceaccount.com' '--region' 'asia-southeast2' '--cpu' '1' '--memory' '0' '--min-instances' '0' '--max-instances' '1' '--set-env-vars''[PROJECT_ID=$PROJECT_ID, ACCESS_TOKEN=$$TOKEN, ENDPOINT_ID=$$ENDPOINT, DB_HOST=$$HOST, DB_PASS=$$PASS]']
     secretEnv: ['TOKEN', 'ENDPOINT', 'HOST', 'PASS']
 options:
   logging: CLOUD_LOGGING_ONLY
